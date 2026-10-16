@@ -3,5 +3,4 @@
 
 ### Ruti Medya CDN
 **rutimedya.com** web sitesinin statik içeriklerini hızlı ve güvenilir biçimde sunmak için oluşturulmuş merkezi CDN deposu.
-[**Web Sitesi →**](https://rutimedya.com)
 </div>
