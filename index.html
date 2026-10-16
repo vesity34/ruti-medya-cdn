@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dosyalar</title>
+</head>
+<body>
+  <div id="dosyalar">yukleniyo...</div>
+  <script>
+    const klasor = new URLSearchParams(location.search).get('klasor') || '';
+    const liste = document.getElementById('dosyalar');
+    const cdn = 'https://ruti-medya-cdn.pages.dev/';
+    function baglanti(ad, adres, yeniSekme = false) {
+      const satir = document.createElement('div');
+      const link = document.createElement('a');
+      link.textContent = ad;
+      link.href = adres;
+      if (yeniSekme) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      }
+      satir.appendChild(link);
+      liste.appendChild(satir);
+    }
+    async function yukle() {
+      try {
+        const yol = klasor.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+        const adres = 'https://api.github.com/repos/vesity34/ruti-medya-cdn/contents/' + yol;
+        const cevap = await fetch(adres);
+        if (!cevap.ok) throw new Error('dosyalar yuklenemedi');
+        const dosyalar = await cevap.json();
+        liste.replaceChildren();
+        if (klasor) {
+          const ust = klasor.split('/').slice(0, -1).join('/');
+          baglanti('← geri', ust ? '?klasor=' + encodeURIComponent(ust) : './');
+        }
+        dosyalar
+          .filter(dosya => !['readme.md', 'index.html', '.gitkeep'].includes(dosya.name.toLowerCase()))
+          .sort((a, b) =>
+            (a.type === 'dir' ? 0 : 1) - (b.type === 'dir' ? 0 : 1) ||
+            a.name.localeCompare(b.name, 'tr')
+          )
+          .forEach(dosya => {
+            if (dosya.type === 'dir') {
+              baglanti(dosya.name + '/', '?klasor=' + encodeURIComponent(dosya.path));
+            } else if (dosya.type === 'file') {
+              const dosyaYolu = dosya.path.split('/').map(encodeURIComponent).join('/');
+              baglanti(dosya.name, cdn + dosyaYolu, true);
+            }
+          });
+      } catch (hata) {
+        liste.textContent = hata.message;
+      }
+    }
+    yukle();
+  </script>
+</body>
+</html>
